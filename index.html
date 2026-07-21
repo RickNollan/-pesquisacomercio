@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pesquisa — Monitor iFood</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
+  body {
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(180deg, #F4F5F7 0%, #E9EBEF 100%);
+    color: #232629;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px 16px 140px;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .block-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .counter {
+    font-size: 12px;
+    color: #9AA0A8;
+  }
+
+  .progress-track {
+    height: 3px;
+    background: #E1E4E9;
+    border-radius: 2px;
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .question-text {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 28px;
+  }
+
+  .text-input {
+    width: 100%;
+    padding: 16px 0;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #D8DBE0;
+    color: #232629;
+    font-size: 18px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .text-input:focus {
+    border-bottom-color: var(--block-color);
+  }
+
+  .text-input::placeholder {
+    color: #A0A6AD;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .option-btn {
+    padding: 14px 18px;
+    background: #FFFFFF;
+    border: 1.5px solid #E1E4E9;
+    border-radius: 12px;
+    color: #4B5058;
+    font-size: 15px;
+    font-weight: 400;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 1px 2px rgba(20,20,30,0.04);
+  }
+
+  .option-btn.selected {
+    background: color-mix(in srgb, var(--block-color) 10%, white);
+    border-color: var(--block-color);
+    color: #1F2328;
+    font-weight: 600;
+  }
+
+  .checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1.5px solid #C7CBD1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: white;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .option-btn.selected .checkbox {
+    background: var(--block-color);
+    border-color: var(--block-color);
+  }
+
+  .multi-hint {
+    font-size: 12px;
+    color: #9AA0A8;
+    margin-bottom: 10px;
+  }
+
+  .nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background: linear-gradient(0deg, #E9EBEF 60%, transparent);
+    display: flex;
+    gap: 10px;
+    max-width: 480px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+
+  .btn-back {
+    padding: 14px 20px;
+    background: #FFFFFF;
+    border: 1px solid #E1E4E9;
+    border-radius: 12px;
+    color: #6B7280;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .btn-next {
+    flex: 1;
+    padding: 14px 0;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-next.active {
+    background: var(--block-color);
+    color: white;
+  }
+
+  .btn-next.inactive {
+    background: #E1E4E9;
+    color: #A0A6AD;
+    cursor: default;
+  }
+
+  .btn-skip {
+    flex: 1;
+    padding: 14px 0;
+    background: transparent;
+    border: none;
+    color: #A0A6AD;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* Finished screen */
+  .finished {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 80vh;
+    padding: 16px;
+  }
+
+  .finished h2 { font-size: 22px; font-weight: 700; margin: 16px 0 8px; }
+  .finished .sub { color: #6B7280; font-size: 14px; margin-bottom: 24px; }
+  .finished .restaurant-name { color: #9AA0A8; font-size: 13px; margin-bottom: 32px; }
+  .finished .restaurant-name strong { color: #374151; }
+
+  .btn-full {
+    width: 100%;
+    padding: 16px 0;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+
+  .btn-primary { background: #3B82F6; color: white; }
+  .btn-secondary { background: #FFFFFF; color: #6B7280; border: 1px solid #E1E4E9; font-size: 14px; font-weight: 500; }
+  .btn-danger { background: transparent; color: #DC2626; font-size: 14px; font-weight: 500; }
+  .btn-green { background: #10B981; color: white; }
+
+  /* Summary */
+  .summary-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .summary-header button {
+    background: none;
+    border: none;
+    color: #6B7280;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .summary-header h2 { font-size: 18px; font-weight: 600; }
+  .summary-date { font-size: 12px; color: #9AA0A8; margin-bottom: 16px; }
+
+  .summary-block-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  .summary-item {
+    background: #FFFFFF;
+    border: 1px solid #EDEFF2;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    box-shadow: 0 1px 2px rgba(20,20,30,0.04);
+  }
+
+  .summary-item .q { font-size: 11px; color: #8A8F98; margin-bottom: 2px; }
+  .summary-item .a { font-size: 14px; color: #232629; }
+  .summary-item .a.empty { color: #B0B5BB; }
+
+  .summary-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    padding-bottom: 40px;
+  }
+
+  .sending-status {
+    text-align: center;
+    font-size: 13px;
+    margin-top: 12px;
+    padding: 8px;
+    border-radius: 8px;
+  }
+  .sending-status.success { color: #10B981; background: #10B98120; }
+  .sending-status.error { color: #F59E0B; background: #F59E0B20; }
+  .sending-status.loading { color: #94A3B8; }
+
+  /* Config bar */
+  .config-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    background: transparent;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    z-index: 10;
+  }
+
+  .config-btn {
+    background: none;
+    border: none;
+    color: #A0A6AD;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+
+  .config-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(30,32,36,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 16px;
+  }
+
+  .config-modal-content {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 12px 40px rgba(20,20,30,0.15);
+  }
+
+  .config-modal-content h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .config-modal-content label {
+    font-size: 13px;
+    color: #8A8F98;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .config-input {
+    width: 100%;
+    padding: 12px;
+    background: #F5F6F8;
+    border: 1px solid #E1E4E9;
+    border-radius: 10px;
+    color: #232629;
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 16px;
+  }
+
+  .config-input:focus { border-color: #3B82F6; }
+  .config-input::placeholder { color: #A0A6AD; }
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+const QUESTIONS = [
+  { id: 1, block: "Perfil do Restaurante", type: "text", label: "Nome do restaurante" },
+  { id: 2, block: "Perfil do Restaurante", type: "cidade-estado", label: "Onde fica o restaurante?" },
+  { id: 3, block: "Perfil do Restaurante", type: "multi", label: "Usa ERP ou PDV? Qual?", options: ["Saipos", "Consumer", "GrandChef", "ERPNext", "Odoo", "Tiny ERP", "Bling", "MarketUP", "Não uso ERP/PDV", "Outros"], allowOther: true, otherOption: "Outros", otherPlaceholder: "Qual?" },
+  { id: 4, block: "Perfil do Restaurante", type: "single", label: "Quantas pessoas trabalham no restaurante?", options: ["1-2", "3-5", "Mais de 5", "Mais de 10", "Mais de 20"] },
+  { id: 5, block: "Perfil do Restaurante", type: "multi", label: "Qual é o seu modelo de negócio hoje?", options: ["Plataforma de delivery (iFood, 99Food, etc)", "Atendimento presencial", "Delivery próprio", "Todas as alternativas"] },
+  { id: 6, block: "Perfil do Restaurante", type: "multi", label: "Quais plataformas de delivery você usa?", options: ["iFood", "99Food", "Keeta", "Rappi", "Zé Delivery", "Todas", "Nenhuma"] },
+
+  { id: 7, block: "IA e Tecnologia", type: "multi", label: "Usa inteligência artificial no negócio?", options: ["ChatGPT", "Claude", "Gemini", "DeepSeek", "Outro", "Não uso"], allowOther: true, otherOption: "Outro", otherPlaceholder: "Qual?" },
+  { id: 8, block: "IA e Tecnologia", type: "multi", label: "Como você usa IA no seu negócio?", options: ["Gerar imagem", "Produtividade", "Automação", "Outros"], allowOther: true, otherOption: "Outros", otherPlaceholder: "Como usa?", skipIf: function() { var a = state.answers[7]; return !a || a.includes("Não uso"); } },
+  { id: 9, block: "IA e Tecnologia", type: "single", label: "Tem assinatura paga de IA?", options: ["Sim", "Não"], skipIf: function() { var a = state.answers[7]; return !a || a.includes("Não uso"); } },
+
+  { id: 10, block: "Dores Operacionais", type: "multi", label: "Qual sua maior dificuldade no dia a dia do restaurante?", options: ["Manter vendas constantes", "Gestão dos funcionários", "Controle de caixa", "Controle de estoque", "Atrair novos clientes", "Fidelizar clientes", "Outros"], allowOther: true, otherOption: "Outros", otherPlaceholder: "Qual dificuldade?" },
+  { id: 11, block: "Dores Operacionais", type: "single", label: "Você sabe qual prato te dá mais lucro e qual dá prejuízo?", options: ["Sim", "Não", "Mais ou menos"] },
+  { id: 12, block: "Dores Operacionais", type: "single", label: "Sabe quantos clientes compraram no último mês e não voltaram?", options: ["Sim", "Não"] },
+  { id: 13, block: "Dores Operacionais", type: "single", label: "Já perdeu pedido porque o sistema PDV/ERP travou ou caiu o servidor?", options: ["Sim", "Não"] },
+  { id: 14, block: "Dores Operacionais", type: "single", label: "Como decide o que colocar em promoção?", options: ["Escolho o que parece combinar", "Olho os números", "Não faço promoção"] },
+
+  { id: 15, block: "WhatsApp e Atendimento", type: "single", label: "Tem atendimento automatizado de pedidos ou reservas via WhatsApp?", options: ["Sim", "Não"] },
+  { id: 16, block: "WhatsApp e Atendimento", type: "single", label: "Tem os contatos dos clientes que pedem pelo WhatsApp salvos?", options: ["Sim", "Não", "Alguns"] },
+
+  { id: 17, block: "Financeiro e Estoque", type: "multi", label: "Qual maquininha de cartão usa?", options: ["Mercado Pago", "Stone/Pagar.me", "GetNet", "Laranjinha", "Cielo", "PagBank", "Outros"], allowOther: true, otherOption: "Outros", otherPlaceholder: "Qual maquininha?" },
+  { id: 18, block: "Financeiro e Estoque", type: "multi", label: "Sua maquininha te dá algum benefício?", options: ["Cashback", "Desconto por volume de venda ou faturamento", "Créditos", "Nenhuma das alternativas", "Outros"], allowOther: true, otherOption: "Outros", otherPlaceholder: "Qual benefício?" },
+  { id: 19, block: "Financeiro e Estoque", type: "single", label: "Tem controle de estoque?", options: ["Só quantidade", "Quantidade + vencimento dos produtos", "Não tenho controle"] },
+
+  { id: 20, block: "Interesse", type: "single", label: "Se existisse uma ferramenta que mostrasse seus produtos com prejuízo, clientes que sumiram, formas de economizar e sugerisse promoções personalizadas para os seus clientes e aumentar a sua receita, você usaria?", options: ["Sim", "Não", "Depende"], allowOther: true, otherOption: "Depende", otherPlaceholder: "Depende de quê?" },
+  { id: 21, block: "Interesse", type: "single", label: "Estaria disposto a pagar mensalmente por uma ferramenta assim?", options: ["Sim", "Não", "Depende"], allowOther: true, otherOption: "Depende", otherPlaceholder: "Depende de quê?" },
+  { id: 22, block: "Interesse", type: "single", label: "Por essa ferramenta dando o caminho de forma automática para ajudar a faturar mais, quanto você acha que seria justo pagar mensalmente?", options: ["R$ 180,00", "R$ 200,00", "R$ 250,00", "R$ 300,00"] },
+
+  { id: 23, block: "Encerramento", type: "single", label: "Posso te mostrar algo que estou construindo exatamente pra isso?", options: ["Sim, mostra agora", "Agora não, me manda no WhatsApp"] },
+  { id: 24, block: "Encerramento", type: "text", label: "WhatsApp pra contato" },
+];
+
+const BLOCK_COLORS = {
+  "Perfil do Restaurante": "#3B82F6",
+  "IA e Tecnologia": "#8B5CF6",
+  "Dores Operacionais": "#EF4444",
+  "WhatsApp e Atendimento": "#10B981",
+  "Financeiro e Estoque": "#F59E0B",
+  "Interesse": "#06B6D4",
+  "Encerramento": "#6366F1",
+};
+
+const BLOCKS = [...new Set(QUESTIONS.map(q => q.block))];
+
+let state = {
+  currentQ: 0,
+  answers: {},
+  screen: "form", // form | finished | summary | config
+  sheetsUrl: localStorage.getItem("sheetsUrl") || "https://script.google.com/macros/s/AKfycbx8ROux_vCSoIVLRv28XYfI5gLNU3NLAMYrg1jLu9WU4LdMUF0yc8RyUQ7wYNJP-fZjag/exec",
+  sendStatus: "",
+};
+
+function getQ() { return QUESTIONS[state.currentQ]; }
+function getColor() { return BLOCK_COLORS[getQ()?.block] || "#3B82F6"; }
+
+function hasAnswer() {
+  const q = getQ();
+  const a = state.answers[q?.id];
+  if (!a) return false;
+  if (q.type === "cidade-estado") return !!(a.cidade && a.cidade.trim());
+  if (Array.isArray(a)) return a.length > 0;
+  return a.trim() !== "";
+}
+
+function setAnswerField(qid, field, val) {
+  if (!state.answers[qid] || typeof state.answers[qid] !== "object") state.answers[qid] = {};
+  state.answers[qid][field] = val;
+  updateNextBtn();
+}
+
+function setAnswer(val) {
+  state.answers[getQ().id] = val;
+  updateNextBtn();
+}
+
+function setOtherAnswer(qid, val) {
+  state.answers[qid + "_other"] = val;
+}
+
+function updateNextBtn() {
+  var btn = document.querySelector(".btn-next");
+  if (!btn) return;
+  var active = hasAnswer();
+  btn.className = "btn-next " + (active ? "active" : "inactive");
+  btn.onclick = active ? goNext : null;
+}
+
+function toggleMulti(opt) {
+  const q = getQ();
+  let current = state.answers[q.id] || [];
+  const exclusives = ["Não uso", "Não sei", "Nenhum", "Não uso ERP/PDV", "Nenhuma das alternativas", "Todas as alternativas", "Todas", "Nenhuma"];
+  if (exclusives.includes(opt)) {
+    state.answers[q.id] = [opt];
+  } else {
+    const filtered = current.filter(o => !exclusives.includes(o));
+    if (filtered.includes(opt)) {
+      state.answers[q.id] = filtered.filter(o => o !== opt);
+    } else {
+      state.answers[q.id] = [...filtered, opt];
+    }
+  }
+  render();
+}
+
+function goNext() {
+  let next = state.currentQ + 1;
+  while (next < QUESTIONS.length && QUESTIONS[next].skipIf && QUESTIONS[next].skipIf()) {
+    next++;
+  }
+  if (next < QUESTIONS.length) {
+    state.currentQ = next;
+    render();
+    setTimeout(() => {
+      const inp = document.querySelector(".text-input");
+      if (inp) inp.focus();
+    }, 100);
+  } else {
+    state.screen = "finished";
+    sendToSheets();
+    render();
+  }
+}
+
+function goBack() {
+  let prev = state.currentQ - 1;
+  while (prev >= 0 && QUESTIONS[prev].skipIf && QUESTIONS[prev].skipIf()) {
+    prev--;
+  }
+  if (prev >= 0) { state.currentQ = prev; render(); }
+}
+
+function resetForm() {
+  state.answers = {};
+  state.currentQ = 0;
+  state.screen = "form";
+  state.sendStatus = "";
+  render();
+}
+
+function getDisplayAnswer(q, emptyDefault) {
+  const a = state.answers[q.id];
+  const empty = emptyDefault !== undefined ? emptyDefault : "—";
+  if (q.type === "cidade-estado") {
+    if (!a || !a.cidade) return empty;
+    return a.estado ? `${a.cidade} - ${a.estado}` : a.cidade;
+  }
+  if (Array.isArray(a)) {
+    if (a.length === 0) return empty;
+    return a.map(o => (q.allowOther && o === q.otherOption && state.answers[q.id + "_other"]) ? `${o}: ${state.answers[q.id + "_other"]}` : o).join(", ");
+  }
+  if (a && q.allowOther && a === q.otherOption && state.answers[q.id + "_other"]) {
+    return `${a}: ${state.answers[q.id + "_other"]}`;
+  }
+  return a || empty;
+}
+
+function getExportText() {
+  let t = `PESQUISA — ${state.answers[1] || "Restaurante"}\n`;
+  t += `Data: ${new Date().toLocaleDateString("pt-BR")}\n`;
+  t += "─".repeat(40) + "\n\n";
+  QUESTIONS.forEach(q => {
+    const val = getDisplayAnswer(q);
+    t += `${q.id}. ${q.label}\n→ ${val}\n\n`;
+  });
+  return t;
+}
+
+function copyResults() {
+  const t = getExportText();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(t).then(() => {
+      state.sendStatus = "copied";
+      render();
+      setTimeout(() => { state.sendStatus = ""; render(); }, 2000);
+    });
+  }
+}
+
+function shareResults() {
+  const t = getExportText();
+  if (navigator.share) {
+    navigator.share({ title: `Pesquisa - ${state.answers[1] || "Restaurante"}`, text: t });
+  } else {
+    copyResults();
+  }
+}
+
+async function sendToSheets() {
+  if (!state.sheetsUrl) return;
+  state.sendStatus = "sending";
+  render();
+
+  try {
+    var params = new URLSearchParams();
+    params.append("timestamp", new Date().toLocaleString("pt-BR"));
+    QUESTIONS.forEach(function(q) {
+      params.append("q" + q.id, getDisplayAnswer(q, ""));
+    });
+
+    var url = state.sheetsUrl + "?" + params.toString();
+
+    var success = await new Promise(function(resolve) {
+      var controller = new AbortController();
+      var timer = setTimeout(function() { controller.abort(); resolve(false); }, 8000);
+
+      fetch(url, { method: "GET", mode: "no-cors", signal: controller.signal })
+        .then(function() { clearTimeout(timer); resolve(true); })
+        .catch(function(err) {
+          clearTimeout(timer);
+          // no-cors fetch still succeeds (opaque response) — abort means real failure
+          resolve(err && err.name === "AbortError" ? false : true);
+        });
+    });
+
+    state.sendStatus = success ? "sent" : "error";
+    render();
+  } catch (e) {
+    state.sendStatus = "error";
+    render();
+  }
+}
+
+function saveConfig() {
+  const input = document.getElementById("sheets-url-input");
+  state.sheetsUrl = input.value.trim();
+  localStorage.setItem("sheetsUrl", state.sheetsUrl);
+  state.screen = "form";
+  render();
+}
+
+function render() {
+  const app = document.getElementById("app");
+  const activeEl = document.activeElement;
+  const cursorPos = (activeEl && activeEl.classList && activeEl.classList.contains("text-input")) ? activeEl.selectionStart : null;
+  const c = getColor();
+  document.documentElement.style.setProperty("--block-color", c);
+
+  if (state.screen === "config") {
+    app.innerHTML = `
+      <div style="min-height:80vh;display:flex;flex-direction:column;justify-content:center">
+        <h3 style="font-size:18px;font-weight:600;margin-bottom:8px">⚙️ Configuração</h3>
+        <p style="font-size:13px;color:#8A8F98;margin-bottom:24px">Cole aqui a URL do Google Apps Script para salvar respostas automaticamente no Google Planilhas.</p>
+        <label style="font-size:13px;color:#8A8F98;margin-bottom:6px;display:block">URL do Apps Script</label>
+        <input id="sheets-url-input" class="config-input" placeholder="https://script.google.com/macros/s/..." value="${state.sheetsUrl}">
+        <p style="font-size:11px;color:#A0A6AD;margin-bottom:24px">Deixe vazio se não quiser salvar automaticamente. Você ainda pode copiar/compartilhar manualmente.</p>
+        <button class="btn-full btn-primary" onclick="saveConfig()">Salvar</button>
+        <button class="btn-full btn-danger" onclick="state.screen='form';render()">Cancelar</button>
+      </div>
+    `;
+    return;
+  }
+
+  if (state.screen === "summary") {
+    let html = `
+      <div class="summary-header">
+        <button onclick="state.screen='finished';render()">←</button>
+        <h2>Resumo — ${state.answers[1] || "Restaurante"}</h2>
+      </div>
+      <div class="summary-date">${new Date().toLocaleDateString("pt-BR")}</div>
+    `;
+
+    BLOCKS.forEach(block => {
+      const bqs = QUESTIONS.filter(q => q.block === block);
+      html += `<div style="margin-bottom:20px">
+        <div class="summary-block-title" style="color:${BLOCK_COLORS[block]}">${block}</div>`;
+      bqs.forEach(q => {
+        const val = getDisplayAnswer(q);
+        html += `<div class="summary-item" style="border-left:3px solid ${BLOCK_COLORS[block]}">
+          <div class="q">${q.id}. ${q.label}</div>
+          <div class="a ${val === "—" ? "empty" : ""}">${val}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+
+    html += `<div class="summary-actions">
+      <button class="btn-full btn-primary" style="flex:1" onclick="copyResults()">📋 Copiar</button>
+      <button class="btn-full btn-green" style="flex:1" onclick="shareResults()">📤 Compartilhar</button>
+    </div>`;
+
+    app.innerHTML = html;
+    return;
+  }
+
+  if (state.screen === "finished") {
+    const answered = Object.keys(state.answers).length;
+    let statusHtml = "";
+    if (state.sendStatus === "sending") statusHtml = `<div class="sending-status loading">Enviando pro Google Planilhas...</div>`;
+    else if (state.sendStatus === "sent") statusHtml = `<div class="sending-status success">✅ Salvo no Google Planilhas</div>`;
+    else if (state.sendStatus === "error") statusHtml = `<div class="sending-status error">⚠️ Erro ao salvar na planilha — toque em "Compartilhar respostas" para não perder os dados</div>`;
+    else if (state.sendStatus === "copied") statusHtml = `<div class="sending-status success">✅ Copiado!</div>`;
+    else if (!state.sheetsUrl) statusHtml = `<div class="sending-status error">⚠️ Google Planilhas não configurado — use ⚙️ no canto superior</div>`;
+
+    app.innerHTML = `
+      <div style="position:fixed;top:0;right:0;padding:12px;z-index:10">
+        <button class="config-btn" onclick="state.screen='config';render()">⚙️</button>
+      </div>
+      <div class="finished">
+        <div style="font-size:56px">✅</div>
+        <h2>Pesquisa completa!</h2>
+        <p class="sub">${answered} de ${QUESTIONS.length} perguntas respondidas</p>
+        <p class="restaurant-name">Restaurante: <strong>${state.answers[1] || "—"}</strong></p>
+        ${statusHtml}
+        <button class="btn-full btn-primary" onclick="state.screen='summary';render()">Ver resumo completo</button>
+        <button class="btn-full btn-secondary" onclick="shareResults()">📤 Compartilhar respostas</button>
+        <button class="btn-full btn-danger" onclick="resetForm()">🔄 Nova pesquisa</button>
+      </div>
+    `;
+    return;
+  }
+
+  // Form screen
+  const q = getQ();
+  const progress = (state.currentQ / QUESTIONS.length) * 100;
+
+  let inputHtml = "";
+
+  if (q.type === "text") {
+    inputHtml = `<input class="text-input" type="text" placeholder="Digite aqui..." 
+      value="${(state.answers[q.id] || "").replace(/"/g, "&quot;")}"
+      oninput="setAnswer(this.value)"
+      onkeydown="if(event.key==='Enter' && this.value.trim()) goNext()">`;
+  }
+
+  if (q.type === "single") {
+    const hasOtherField = q.allowOther && state.answers[q.id] === q.otherOption;
+    inputHtml = `<div class="options">`;
+    q.options.forEach(opt => {
+      const sel = state.answers[q.id] === opt;
+      const isOtherOpt = q.allowOther && opt === q.otherOption;
+      inputHtml += `<button class="option-btn ${sel ? "selected" : ""}" 
+        onclick="setAnswer('${opt.replace(/'/g, "\\'")}'); ${isOtherOpt ? "render()" : "setTimeout(goNext, 200)"}">
+        ${opt}
+      </button>`;
+    });
+    inputHtml += `</div>`;
+    if (hasOtherField) {
+      const otherVal = state.answers[q.id + "_other"] || "";
+      inputHtml += `<input class="text-input" type="text" placeholder="${q.otherPlaceholder || "Explique..."}"
+        value="${otherVal.replace(/"/g, "&quot;")}"
+        oninput="setOtherAnswer(${q.id}, this.value)"
+        onkeydown="if(event.key==='Enter' && this.value.trim()) goNext()">`;
+    }
+  }
+
+  if (q.type === "cidade-estado") {
+    const val = state.answers[q.id] || {};
+    const estados = ["Acre","Alagoas","Amapá","Amazonas","Bahia","Ceará","Distrito Federal","Espírito Santo","Goiás","Maranhão","Mato Grosso","Mato Grosso do Sul","Minas Gerais","Pará","Paraíba","Paraná","Pernambuco","Piauí","Rio de Janeiro","Rio Grande do Norte","Rio Grande do Sul","Rondônia","Roraima","Santa Catarina","São Paulo","Sergipe","Tocantins"];
+    const opts = estados.map(e => `<option value="${e}"${val.estado === e ? " selected" : ""}>${e}</option>`).join("");
+    inputHtml = `
+      <div style="display:flex;gap:16px;align-items:flex-end">
+        <div style="flex:1">
+          <div style="font-size:12px;color:#9AA0A8;margin-bottom:6px">Cidade</div>
+          <input class="text-input" type="text" placeholder="Ex: Campinas"
+            value="${(val.cidade || "").replace(/"/g, "&quot;")}"
+            oninput="setAnswerField(${q.id}, 'cidade', this.value)"
+            onkeydown="if(event.key==='Enter' && this.value.trim()) goNext()">
+        </div>
+        <div style="flex:1">
+          <div style="font-size:12px;color:#9AA0A8;margin-bottom:6px">Estado</div>
+          <select class="text-input" style="cursor:pointer;padding-top:14px;padding-bottom:14px"
+            onchange="setAnswerField(${q.id}, 'estado', this.value)">
+            <option value="">Selecione...</option>
+            ${opts}
+          </select>
+        </div>
+      </div>`;
+  }
+
+  if (q.type === "multi") {
+    inputHtml = `<div class="multi-hint">Pode escolher mais de uma</div><div class="options">`;
+    q.options.forEach(opt => {
+      const current = state.answers[q.id] || [];
+      const sel = current.includes(opt);
+      inputHtml += `<button class="option-btn ${sel ? "selected" : ""}" 
+        onclick="toggleMulti('${opt.replace(/'/g, "\\'")}')">
+        <span class="checkbox">${sel ? "✓" : ""}</span>
+        ${opt}
+      </button>`;
+    });
+    inputHtml += `</div>`;
+    if (q.allowOther && (state.answers[q.id] || []).includes(q.otherOption)) {
+      const otherVal = state.answers[q.id + "_other"] || "";
+      inputHtml += `<input class="text-input" type="text" placeholder="${q.otherPlaceholder || "Qual?"}"
+        value="${otherVal.replace(/"/g, "&quot;")}"
+        oninput="setOtherAnswer(${q.id}, this.value)">`;
+    }
+  }
+
+  let navHtml = "";
+  if (state.currentQ > 0) {
+    navHtml += `<button class="btn-back" onclick="goBack()">←</button>`;
+  }
+
+  const singleWithOther = q.type === "single" && q.allowOther && state.answers[q.id] === q.otherOption;
+  if (q.type === "text" || q.type === "multi" || q.type === "cidade-estado" || singleWithOther) {
+    const active = hasAnswer();
+    const label = state.currentQ === QUESTIONS.length - 1 ? "Finalizar" : "Próxima →";
+    navHtml += `<button class="btn-next ${active ? "active" : "inactive"}" 
+      onclick="${active ? "goNext()" : ""}">${label}</button>`;
+  } else {
+    navHtml += `<button class="btn-skip" onclick="goNext()">Pular</button>`;
+  }
+
+  app.innerHTML = `
+    <div style="position:fixed;top:0;right:0;padding:12px;z-index:10">
+      <button class="config-btn" onclick="state.screen='config';render()">⚙️</button>
+    </div>
+    <div style="padding-top:8px">
+      <div class="header">
+        <div class="block-label" style="color:${c}">${q.block}</div>
+        <div class="counter">${state.currentQ + 1}/${QUESTIONS.length}</div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" style="width:${progress}%;background:linear-gradient(90deg,${c},${c}AA)"></div>
+      </div>
+      <div class="question-text">${q.label}</div>
+      ${inputHtml}
+    </div>
+    <div class="nav-bar">${navHtml}</div>
+  `;
+
+  if (document.querySelector(".text-input")) {
+    setTimeout(() => {
+      const inp = document.querySelector(".text-input");
+      if (inp) {
+        inp.focus();
+        const pos = cursorPos !== null ? cursorPos : inp.value.length;
+        inp.setSelectionRange(pos, pos);
+      }
+    }, 0);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
